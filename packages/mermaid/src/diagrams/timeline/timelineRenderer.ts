@@ -25,11 +25,15 @@ interface TimelineTask {
   score: number;
   events: string[];
 }
+const DEFAULT_TASK_WIDTH = 150;
+
 export const draw = function (text: string, id: string, version: string, diagObj: Diagram) {
   //1. Fetch the configuration
   const conf = getConfig();
   // @ts-expect-error - wrong config?
   const LEFT_MARGIN = conf.leftMargin ?? 50;
+
+  const taskWidth = conf.timeline.width ?? DEFAULT_TASK_WIDTH;
 
   log.debug('timeline', diagObj.db);
 
@@ -82,7 +86,7 @@ export const draw = function (text: string, id: string, version: string, diagObj
       number: sectionNumber,
       descr: section,
       section: sectionNumber,
-      width: 150,
+      width: taskWidth,
       padding: 20,
       maxHeight: maxSectionHeight,
     };
@@ -103,7 +107,7 @@ export const draw = function (text: string, id: string, version: string, diagObj
       number: i,
       descr: task,
       section: task.section,
-      width: 150,
+      width: taskWidth,
       padding: 20,
       maxHeight: maxTaskHeight,
     };
@@ -120,7 +124,7 @@ export const draw = function (text: string, id: string, version: string, diagObj
         descr: event,
         section: task.section,
         number: task.section,
-        width: 150,
+        width: taskWidth,
         padding: 20,
         maxHeight: 50,
       };
@@ -141,7 +145,7 @@ export const draw = function (text: string, id: string, version: string, diagObj
         number: sectionNumber,
         descr: section,
         section: sectionNumber,
-        width: 200 * Math.max(tasksForSection.length, 1) - 50,
+        width: (taskWidth + 50) * Math.max(tasksForSection.length, 1) - 50,
         padding: 20,
         maxHeight: maxSectionHeight,
       };
@@ -171,7 +175,7 @@ export const draw = function (text: string, id: string, version: string, diagObj
         );
       }
       // todo replace with total width of section and its tasks
-      masterX += 200 * Math.max(tasksForSection.length, 1);
+      masterX += (taskWidth + 50) * Math.max(tasksForSection.length, 1);
 
       masterY = sectionBeginY;
       sectionNumber++;
@@ -246,6 +250,8 @@ export const drawTasks = function (
   maxSectionHeight: number,
   isWithoutSections: boolean
 ) {
+  const taskWidth = conf.timeline?.width ?? DEFAULT_TASK_WIDTH;
+
   // Draw the tasks
   for (const task of tasks) {
     // create node from task
@@ -253,7 +259,7 @@ export const drawTasks = function (
       descr: task.task,
       section: sectionColor,
       number: sectionColor,
-      width: 150,
+      width: taskWidth,
       padding: 20,
       maxHeight: maxTaskHeight,
     };
@@ -284,9 +290,9 @@ export const drawTasks = function (
 
       lineWrapper
         .append('line')
-        .attr('x1', masterX + 190 / 2)
+        .attr('x1', masterX + (taskWidth + 40) / 2)
         .attr('y1', masterY + maxTaskHeight) // One section head + one task + margins
-        .attr('x2', masterX + 190 / 2) // Subtract stroke width so arrow point is retained
+        .attr('x2', masterX + (taskWidth + 40) / 2) // Subtract stroke width so arrow point is retained
         .attr(
           'y2',
           masterY +
@@ -301,7 +307,7 @@ export const drawTasks = function (
         .attr('stroke-dasharray', '5,5');
     }
 
-    masterX = masterX + 200;
+    masterX = masterX + (taskWidth + 50);
     if (isWithoutSections && !conf.timeline?.disableMulticolor) {
       sectionColor++;
     }
@@ -329,7 +335,7 @@ export const drawEvents = function (
       descr: event,
       section: sectionColor,
       number: sectionColor,
-      width: 150,
+      width: conf.timeline?.width ?? DEFAULT_TASK_WIDTH,
       padding: 20,
       maxHeight: 50,
     };
